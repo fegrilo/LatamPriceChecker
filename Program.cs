@@ -1,46 +1,80 @@
 ﻿using System.Net;
-using LatamPriceChecker;
+using LatamPriceChecker.Data;
+using LatamPriceChecker.Repositories;
 using LatamPriceChecker.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http;
 
-var priceFetcher = BuildPriceFetcher();
-var notifier = BuildDiscordNotifier();
-var monitorService = new PriceMonitorService(priceFetcher, notifier, new AlertTracker());
+var builder = WebApplication.CreateBuilder(args);
 
-Console.WriteLine("Monitor de preços iniciado. Pressione Ctrl+C para sair.");
-Console.WriteLine($"Verificando {AppConfig.MonitoredItems.Count} item(ns) a cada {AppConfig.CheckInterval.TotalMinutes} minutos.\n");
+// ===== Banco de dados (PostgreSQL) =====
 
-await RunSchedulerAsync(monitorService, AppConfig.CheckInterval);
+var connectionString = builder.Configuration.GetConnectionString("Postgres")
+    ?? throw new InvalidOperationException("Connection string 'Postgres' não configurada em appsettings.json.");
 
-return;
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
-// ===== Composição das dependências =====
+builder.Services.AddScoped<IMonitoredItemRepository, MonitoredItemRepository>();
 
-static IPriceFetcherService BuildPriceFetcher()
+// ===== HTTP clients / serviços de domínio =====
+
+builder.Services.AddHttpClient<IPriceFetcherService, PriceFetcherService>(client =>
 {
-    var handler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All };
-    var httpClient = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(15) };
-    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+    client.Timeout = TimeSpan.FromSeconds(15);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36");
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+    new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All });
 
-    return new PriceFetcherService(httpClient);
-}
+builder.Services.AddHttpClient<INotifier, DiscordNotifier>();
 
-static INotifier BuildDiscordNotifier()
+builder.Services.AddSingleton<AlertTracker>();
+builder.Services.AddScoped<PriceMonitorService>();
+
+// ===== Background service (loop de checagem periódica) =====
+
+builder.Services.AddHostedService<PriceMonitorBackgroundService>();
+
+// ===== API =====
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
 {
-    var httpClient = new HttpClient();
-    return new DiscordNotifier(httpClient, AppConfig.DiscordWebhookUrl);
-}
-
-// ===== Loop do scheduler =====
-
-static async Task RunSchedulerAsync(PriceMonitorService monitorService, TimeSpan interval)
-{
-    using var timer = new PeriodicTimer(interval);
-
-    do
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        await monitorService.CheckAllAsync(AppConfig.MonitoredItems);
-        Console.WriteLine($"\nPróxima verificação em {interval.TotalMinutes} minutos...\n");
-    }
-    while (await timer.WaitForNextTickAsync());
+        Title = "LatamPriceChecker API",
+        Version = "v1",
+        Description = "API para gerenciar itens monitorados e acompanhar preços do shop-search do Ragnarok Online LATAM."
+    });
+});
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "LatamPriceChecker API v1");
+    });
 }
+
+// Garante que o schema do banco existe (para produção, prefira migrations: dotnet ef migrations add InitialCreate)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
+
+app.MapControllers();
+
+app.MapGet("/", () => Results.Ok(new { status = "ok", service = "LatamPriceChecker" }));
+
+app.Run();

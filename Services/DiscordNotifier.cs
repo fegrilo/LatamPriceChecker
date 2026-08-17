@@ -9,10 +9,12 @@ public class DiscordNotifier : INotifier
     private readonly HttpClient _httpClient;
     private readonly string _webhookUrl;
 
-    public DiscordNotifier(HttpClient httpClient, string webhookUrl)
+    public DiscordNotifier(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _webhookUrl = webhookUrl;
+        _webhookUrl = configuration["Discord:WebhookUrl"]
+            ?? throw new InvalidOperationException(
+                "Configuração 'Discord:WebhookUrl' não encontrada. Defina-a em appsettings.json, variável de ambiente ou user-secrets.");
     }
 
     public async Task SendPriceAlertAsync(ShopItem item, long targetPrice)

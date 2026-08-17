@@ -1,4 +1,9 @@
 ﻿namespace LatamPriceChecker.Models
 {
-    public record MonitoredItem(string SearchWord, long TargetPrice);
+    public class MonitoredItem
+    {
+        public int Id { get; set; }
+        public string SearchWord { get; set; } = string.Empty;
+        public long TargetPrice { get; set; }
+    }
 }

@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: latam-price-checker-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: latam_price_checker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CHANGE_ME
+    ports:
+      - "5432:5432"
+    volumes:
+      - latam-price-checker-data:/var/lib/postgresql/data
+
+volumes:
+  latam-price-checker-data:
