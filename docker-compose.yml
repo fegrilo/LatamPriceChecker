@@ -6,11 +6,33 @@ services:
     environment:
       POSTGRES_DB: latam_price_checker
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: CHANGE_ME
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME}
     ports:
       - "5432:5432"
     volumes:
       - latam-price-checker-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d latam_price_checker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: latam-price-checker-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=latam_price_checker;Username=postgres;Password=${POSTGRES_PASSWORD:-MariLeo0619!}"
+      Discord__WebhookUrl: "${DISCORD_WEBHOOK_URL:-https://discord.com/api/webhooks/1538994389764800613/5-mrTuVLP0PxYWRvqUxqNrhrB6F_4ERhZqscUeq3ApoRI_pKhK2Fi72WOXPLYKsSNGmk}"
+      Monitor__CheckIntervalMinutes: "${MONITOR_INTERVAL_MINUTES:-3}"
+    ports:
+      - "5080:8080"
 
 volumes:
   latam-price-checker-data:
