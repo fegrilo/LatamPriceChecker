@@ -1,12 +1,13 @@
-﻿using System.Text.Json;
+﻿using LatamPriceChecker.Models;
+using System.Text.Json;
 using System.Text.RegularExpressions;
-using LatamPriceChecker.Models;
 
 namespace LatamPriceChecker.Services;
 
 public class PriceFetcherService : IPriceFetcherService
 {
     private const string BaseUrl = "https://ro.gnjoylatam.com/pt/intro/shop-search/trading";
+
     private static readonly Regex ListPattern = new(
         @"\\""list\\"":\[(.*?)\],\\""totalCount\\"":(\d+)",
         RegexOptions.Singleline | RegexOptions.Compiled);
@@ -18,17 +19,17 @@ public class PriceFetcherService : IPriceFetcherService
         _httpClient = httpClient;
     }
 
-    public async Task<List<ShopItem>> FetchItemsAsync(string searchWord, string serverType)
+    public async Task<List<ShopItem>> FetchItemsAsync(string searchWord)
     {
-        var url = BuildUrl(searchWord, serverType);
+        var url = BuildUrl(searchWord);
         var html = await _httpClient.GetStringAsync(url);
 
         return ParseItemsFromHtml(html);
     }
 
-    private static string BuildUrl(string searchWord, string serverType)
+    private static string BuildUrl(string searchWord)
     {
-        return $"{BaseUrl}?storeType=BUY&serverType={serverType}" +
+        return $"{BaseUrl}?storeType=BUY&serverType=FREYA" +
                $"&searchWord={Uri.EscapeDataString(searchWord)}&sortType=LOW_PRICE&p=1&view=list";
     }
 

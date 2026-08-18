@@ -8,5 +8,7 @@
         public string? ItemSellerCharName { get; set; }
         public int ItemCnt { get; set; }
         public string? StoreTypeName { get; set; }
+        public string? MapName { get; set; }
+        public string? DatabaseImgPath { get; set; }
     }
 }

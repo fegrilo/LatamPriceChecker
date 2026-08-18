@@ -7,7 +7,6 @@ public class PriceMonitorService
     private readonly IPriceFetcherService _fetcher;
     private readonly INotifier _notifier;
     private readonly AlertTracker _alertTracker;
-    private readonly string _serverType = "FREYA";
 
     public PriceMonitorService(IPriceFetcherService fetcher, INotifier notifier, AlertTracker alertTracker)
     {
@@ -30,7 +29,7 @@ public class PriceMonitorService
 
         try
         {
-            var items = await _fetcher.FetchItemsAsync(monitored.SearchWord, _serverType);
+            var items = await _fetcher.FetchItemsAsync(monitored.SearchWord);
 
             if (items.Count == 0)
             {
