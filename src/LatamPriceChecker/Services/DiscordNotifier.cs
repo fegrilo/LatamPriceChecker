@@ -71,6 +71,6 @@ public class DiscordNotifier : INotifier
             message["allowed_mentions"] = new { users = new[] { mentionUserId } };
         }
 
-        return new { embeds = new[] { embed } };
+        return message;
     }
 }

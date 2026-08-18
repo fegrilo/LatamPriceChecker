@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LatamPriceCheckerTests", "LatamPriceCheckerTests\LatamPriceCheckerTests.csproj", "{572097B9-1489-488B-BD00-5984BA915C32}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LatamPriceChecker", "LatamPriceChecker\LatamPriceChecker.csproj", "{AC31F5A5-8E25-4A5F-A152-E73462B8283F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{572097B9-1489-488B-BD00-5984BA915C32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{572097B9-1489-488B-BD00-5984BA915C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{572097B9-1489-488B-BD00-5984BA915C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{572097B9-1489-488B-BD00-5984BA915C32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC31F5A5-8E25-4A5F-A152-E73462B8283F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC31F5A5-8E25-4A5F-A152-E73462B8283F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC31F5A5-8E25-4A5F-A152-E73462B8283F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC31F5A5-8E25-4A5F-A152-E73462B8283F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {91B0A166-56D3-4404-9F03-6C79560B4DEB}
+	EndGlobalSection
+EndGlobal
